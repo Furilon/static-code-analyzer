@@ -103,7 +103,7 @@ def analyze_directory(path):
     """Analyze all files in directory and subdirectories."""
     for root, _, files in os.walk(path):
         for file in files:
-            if file.endswith(".py"):
+            if file.endswith(".py") and file != "tests.py":
                 analyze_file(os.path.join(root, file))
 
 
