@@ -1,5 +1,4 @@
-import sys
-import os
+import sys, os, re
 
 # Stylistic issues
 style_issues = {
@@ -9,9 +8,9 @@ style_issues = {
     "004": "Less than two spaces before inline comments",
     "005": "TODO found",
     "006": "More than two blank lines preceding a code line",
-    '007': "Too many spaces after {0}",
-    "008": "Class name {0} should be written in CamelCase",
-    "009": "Function name {0} should be written in snake_case"
+    '007': "Too many spaces after '{0}'",
+    "008": "Class name '{0}' should be written in CamelCase",
+    "009": "Function name '{0}' should be written in snake_case"
 }
 
 
@@ -23,12 +22,14 @@ def check_for_length(index, string, path):
 
 def check_for_indentation(index, string, path):
     """Check if indentation is not a multiple of 4."""
+
     if string.startswith((" ")) and (len(string) - len(string.lstrip(" "))) % 4 != 0:
         print_error(index, 1, path)
 
 
 def check_for_semicolon(index, string, path):
     """Check if there is an unnecessary semicolon after a statement."""
+
     code = string.split("#")[0]
     if code.strip().endswith(';'):
         print_error(index, 2, path)
@@ -36,6 +37,7 @@ def check_for_semicolon(index, string, path):
 
 def check_space_before_comment(index, string, path):
     """Check if there are less than two spaces before inline comments."""
+    
     if string.__contains__("#") and not string.strip().startswith("#"):
         text = string.split("#")[0]
         if len(text) - len(text.rstrip(" ")) != 2:
@@ -44,6 +46,7 @@ def check_space_before_comment(index, string, path):
 
 def check_todo(index, string, path):
     """Check if TODO is found in comment."""
+
     if string.__contains__("#"):
         comment = string.split("#", 1)[-1].strip().lower()
         if "todo" in comment:
@@ -51,20 +54,56 @@ def check_todo(index, string, path):
 
 
 def check_lines_between_functions(index, path):
-        """Check if there are more than two blank lines preceding a code line."""
-        print_error(index, 5, path)
+    """Check if there are more than two blank lines preceding a code line."""
+
+    print_error(index, 5, path)
 
 
-def check_declaration(index, string, path):
-    pass
+def check_declaration_spaces(index, string, path):
+    """Check if declaration has correct # of spaces."""
+
+    declaration = is_declaration(string)
+    pattern = r"class\s{2,}\w+|def\s{2,}\w+"
+    if declaration and re.match(pattern, string):
+        code = list(style_issues.keys())[6]
+        msg = style_issues[code].format(declaration)
+        print(f"{path}: Line {index + 1}: S{code} {msg}")
 
 
 def check_class_name(index, string, path):
-    pass
+    """Check if class name is written in CamelCase."""
+
+    declaration = is_declaration(string)
+    is_camel_case = string != string.lower() and string != string.upper() and "_" not in string
+
+    if declaration == "class" and not is_camel_case:
+        name = re.match(r"(class\s+)(\w+)", string).group(2)
+        code = list(style_issues.keys())[7]
+        msg = style_issues[code].format(name)
+        print(f"{path}: Line {index + 1}: S{code} {msg}")
 
 
 def check_function_name(index, string, path):
-    pass
+    """Check if function name is written in snake_case."""
+    declaration = is_declaration(string)
+    is_snake_case = "_" in string.strip("_") and string == string.lower()
+
+
+    if declaration == "function" and not is_snake_case:
+        name = re.match(r"(\s+def\s+)(\w+)", string).group(2)
+        code = list(style_issues.keys())[8]
+        msg = style_issues[code].format(name)
+        print(f"{path}: Line {index + 1}: S{code} {msg}")
+
+
+def is_declaration(string):
+    """Check if line is a declaration."""
+    if string.strip().startswith("def"):
+        return "function"
+    elif string.strip().startswith("class"):
+        return "class"
+    else:
+        return False
 
 
 def print_error(index, msg_index, path):
@@ -106,6 +145,10 @@ def analyze_file(path):
             elif empty_line_counter > 2:
                         check_lines_between_functions(i, path)
                         empty_line_counter = 0
+
+            check_declaration_spaces(i, line, path)
+            check_class_name(i, line, path)
+            check_function_name(i, line, path)
 
 
 def analyze_directory(path):
