@@ -55,7 +55,6 @@ def check_todo(index, string, path):
 
 def check_lines_between_functions(index, path):
     """Check if there are more than two blank lines preceding a code line."""
-
     print_error(index, 5, path)
 
 
@@ -63,8 +62,8 @@ def check_declaration_spaces(index, string, path):
     """Check if declaration has correct # of spaces."""
 
     declaration = is_declaration(string)
-    pattern = r"class\s{2,}\w+|def\s{2,}\w+"
-    if declaration and re.match(pattern, string):
+    pattern = r"(class\s{2,}\w+)|(def\s{2,}\w+)"
+    if declaration and re.match(pattern, string.strip()):
         code = list(style_issues.keys())[6]
         msg = style_issues[code].format(declaration)
         print(f"{path}: Line {index + 1}: S{code} {msg}")
@@ -86,11 +85,11 @@ def check_class_name(index, string, path):
 def check_function_name(index, string, path):
     """Check if function name is written in snake_case."""
     declaration = is_declaration(string)
-    is_snake_case = "_" in string.strip("_") and string == string.lower()
+    is_snake_case = string == string.lower()
 
 
     if declaration == "function" and not is_snake_case:
-        name = re.match(r"(\s+def\s+)(\w+)", string).group(2)
+        name = re.match(r"(\s*def\s+)(\w+)", string).group(2)
         code = list(style_issues.keys())[8]
         msg = style_issues[code].format(name)
         print(f"{path}: Line {index + 1}: S{code} {msg}")
@@ -132,22 +131,19 @@ def get_path():
 def analyze_file(path):
      """Analyze file and print errors."""
      with open(path, encoding="utf-8") as file:
-        empty_line_counter = 0
-        for i, line in enumerate(file):
-            check_for_length(i, line, path)
-            check_for_indentation(i, line, path)
-            check_for_semicolon(i, line, path)
-            check_space_before_comment(i, line, path)
-            check_todo(i, line, path)
+        lines = file.readlines()
+        for i, line in enumerate(lines):
+            # check_for_length(i, line, path)
+            # check_for_indentation(i, line, path)
+            # check_for_semicolon(i, line, path)
+            # check_space_before_comment(i, line, path)
+            # check_todo(i, line, path)
 
-            if line in ['\r\n', '\n']:
-                empty_line_counter += 1
-            elif empty_line_counter > 2:
-                        check_lines_between_functions(i, path)
-                        empty_line_counter = 0
-
-            check_declaration_spaces(i, line, path)
-            check_class_name(i, line, path)
+            # if line and lines[i].strip() == '' and lines[i-1].strip() == '' and lines[i-2].strip() == '':
+            #     check_lines_between_functions(i+1, path)
+            
+            # check_declaration_spaces(i, line, path)
+            # check_class_name(i, line, path)
             check_function_name(i, line, path)
 
 
