@@ -9,7 +9,7 @@ style_issues = {
     "004": "Less than two spaces before inline comments",
     "005": "TODO found",
     "006": "More than two blank lines preceding a code line",
-    '007': "Too many spaces after 'class'",
+    '007': "Too many spaces after {0}",
     "008": "Class name {0} should be written in CamelCase",
     "009": "Function name {0} should be written in snake_case"
 }
@@ -18,26 +18,20 @@ style_issues = {
 def check_for_length(index, string, path):
     """Check if line is longer than 79 characters."""
     if len(string.strip()) > 79:
-        code = list(style_issues.keys())[0]
-        msg = style_issues[code]
-        print(f"{path}: Line {index + 1}: S{code} {msg}")
+        print_error(index, 0, path)
 
 
 def check_for_indentation(index, string, path):
     """Check if indentation is not a multiple of 4."""
     if string.startswith((" ")) and (len(string) - len(string.lstrip(" "))) % 4 != 0:
-        code = list(style_issues.keys())[1]
-        msg = style_issues[code]
-        print(f"{path}: Line {index + 1}: S{code} {msg}")
+        print_error(index, 1, path)
 
 
 def check_for_semicolon(index, string, path):
     """Check if there is an unnecessary semicolon after a statement."""
     code = string.split("#")[0]
     if code.strip().endswith(';'):
-        code = list(style_issues.keys())[2]
-        msg = style_issues[code]
-        print(f"{path}: Line {index + 1}: S{code} {msg}")
+        print_error(index, 2, path)
 
 
 def check_space_before_comment(index, string, path):
@@ -45,9 +39,7 @@ def check_space_before_comment(index, string, path):
     if string.__contains__("#") and not string.strip().startswith("#"):
         text = string.split("#")[0]
         if len(text) - len(text.rstrip(" ")) != 2:
-            code = list(style_issues.keys())[3]
-            msg = style_issues[code]
-            print(f"{path}: Line {index + 1}: S{code} {msg}")
+            print_error(index, 3, path)
 
 
 def check_todo(index, string, path):
@@ -55,14 +47,28 @@ def check_todo(index, string, path):
     if string.__contains__("#"):
         comment = string.split("#", 1)[-1].strip().lower()
         if "todo" in comment:
-            code = list(style_issues.keys())[4]
-            msg = style_issues[code]
-            print(f"{path}: Line {index + 1}: S{code} {msg}")
+            print_error(index, 4, path)
 
 
 def check_lines_between_functions(index, path):
         """Check if there are more than two blank lines preceding a code line."""
-        code = list(style_issues.keys())[5]
+        print_error(index, 5, path)
+
+
+def check_declaration(index, string, path):
+    pass
+
+
+def check_class_name(index, string, path):
+    pass
+
+
+def check_function_name(index, string, path):
+    pass
+
+
+def print_error(index, msg_index, path):
+        code = list(style_issues.keys())[msg_index]
         msg = style_issues[code]
         print(f"{path}: Line {index + 1}: S{code} {msg}")
 
