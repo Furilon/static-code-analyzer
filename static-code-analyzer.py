@@ -9,6 +9,9 @@ style_issues = {
     "004": "Less than two spaces before inline comments",
     "005": "TODO found",
     "006": "More than two blank lines preceding a code line",
+    '007': "Too many spaces after 'class'",
+    "008": "Class name {0} should be written in CamelCase",
+    "009": "Function name {0} should be written in snake_case"
 }
 
 
