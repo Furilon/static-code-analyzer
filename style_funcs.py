@@ -14,7 +14,7 @@ style_issues = {
     '007': "Too many spaces after '{0}'",
     "008": "Class name '{0}' should be written in CamelCase",
     "009": "Function name '{0}' should be written in snake_case",
-    "010": "Argument name '{0}+' should be written in snake_case",
+    "010": "Argument name '{0}' should be written in snake_case",
     "011": "Variable name '{0}' should be written in snake_case",
     "012": "The default argument value is mutable",
 }
@@ -28,9 +28,7 @@ class ArgumentChecker(ast.NodeVisitor):
     def visit_FunctionDef(self, node):
         for arg in node.args.args:
             if arg.arg != arg.arg.lower():
-                code = list(style_issues.keys())[9]
-                msg = style_issues[code].format(arg.arg)
-                print(f"{self.path}: Line {arg.lineno}: S{code} {msg}")
+                print_ast_error(arg.lineno, 10, arg.arg, self.path)
         self.generic_visit(node)
 
 
@@ -61,8 +59,7 @@ class DefaultArgumentChecker(ast.NodeVisitor):
         if node.args.defaults:
             for default in node.args.defaults:
                 if isinstance(default, ast.List) or isinstance(default, ast.Dict) or isinstance(default, ast.Set):
-                    code = list(style_issues.keys())[11]
-                    print(f"{self.path}: Line {default.lineno}: S{code} {style_issues[code]}")
+                    print_error(node.lineno, 11, self.path)
         self.generic_visit(node)
 
 
@@ -74,9 +71,7 @@ class ClassNameChecker(ast.NodeVisitor):
 
     def visit_ClassDef(self, node):
         if node.name != node.name.capitalize():
-            code = list(style_issues.keys())[8]
-            msg = style_issues[code].format(node.name)
-            print(f"{self.path}: Line {node.lineno}: S{code} {msg}")
+            print_ast_error(node.lineno, 8, node.name, self.path)
         self.generic_visit(node)
 
 
@@ -88,9 +83,7 @@ class FunctionNameChecker(ast.NodeVisitor):
 
     def visit_FunctionDef(self, node):
         if node.name != node.name.lower():
-            code = list(style_issues.keys())[9]
-            msg = style_issues[code].format(node.name)
-            print(f"{self.path}: Line {node.lineno}: S{code} {msg}")
+            print_ast_error(node.lineno, 9, node.name, self.path)
         self.generic_visit(node)
 
 
@@ -179,3 +172,9 @@ def print_error(index, msg_index, path):
         code = list(style_issues.keys())[msg_index]
         msg = style_issues[code]
         print(f"{path}: Line {index + 1}: S{code} {msg}")
+
+
+def print_ast_error(index, msg_index, name, path):
+        code = list(style_issues.keys())[msg_index]
+        msg = style_issues[code].format(name)
+        print(f"{path}: Line {index}: S{code} {msg}")
