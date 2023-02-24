@@ -28,7 +28,7 @@ class ArgumentChecker(ast.NodeVisitor):
     def visit_FunctionDef(self, node):
         for arg in node.args.args:
             if arg.arg != arg.arg.lower():
-                print_ast_error(arg.lineno, 10, arg.arg, self.path)
+                print_error(arg.lineno, 10, self.path, arg.arg)
         self.generic_visit(node)
 
 
@@ -43,9 +43,7 @@ class VariableChecker(ast.NodeVisitor):
             if isinstance(arg, ast.Assign):
                 for target in arg.targets:
                     if target.id != target.id.lower():
-                        code = list(style_issues.keys())[10]
-                        msg = style_issues[code].format(target.id)
-                        print(f"{self.path}: Line {target.lineno}: S{code} {msg}")
+                        print_error(target.lineno, 11, self.path, target.id)
         self.generic_visit(node)
 
 
@@ -71,7 +69,7 @@ class ClassNameChecker(ast.NodeVisitor):
 
     def visit_ClassDef(self, node):
         if node.name != node.name.capitalize():
-            print_ast_error(node.lineno, 8, node.name, self.path)
+            print_error(node.lineno, 8, self.path, node.name)
         self.generic_visit(node)
 
 
@@ -83,7 +81,7 @@ class FunctionNameChecker(ast.NodeVisitor):
 
     def visit_FunctionDef(self, node):
         if node.name != node.name.lower():
-            print_ast_error(node.lineno, 9, node.name, self.path)
+            print_error(node.lineno, 9, self.path, node.name)
         self.generic_visit(node)
 
 
@@ -168,13 +166,9 @@ def check_default_argument(doc, path):
     DefaultArgumentChecker(path).visit(ast.parse(doc))
 
 
-def print_error(index, msg_index, path):
+def print_error(index, msg_index, path, name=None):
         code = list(style_issues.keys())[msg_index]
         msg = style_issues[code]
+        if name:
+            msg = style_issues[code].format(name)
         print(f"{path}: Line {index + 1}: S{code} {msg}")
-
-
-def print_ast_error(index, msg_index, name, path):
-        code = list(style_issues.keys())[msg_index]
-        msg = style_issues[code].format(name)
-        print(f"{path}: Line {index}: S{code} {msg}")
