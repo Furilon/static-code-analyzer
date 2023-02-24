@@ -1,30 +1,35 @@
 import style_funcs, os, ast
 
 
-def ast_analyzer(file):
+def ast_analyzer(file, path):
     """Analyze file with ast and print errors."""
-    with open(file, encoding="utf-8") as f:
-        lines = f.read()
-        tree = ast.parse(lines)
-        style_funcs.check_class_name(tree, file)
-        style_funcs.check_function_name(tree, file)
-        style_funcs.check_argument_name(tree, file)
-        style_funcs.check_variable_name(tree, file)
-        style_funcs.check_default_argument(tree, file)
+    lines = file.read()
+    tree = ast.parse(lines)
+    style_funcs.check_class_name(tree, path)
+    style_funcs.check_function_name(tree, path)
+    style_funcs.check_argument_name(tree, path)
+    style_funcs.check_variable_name(tree, path)
+    style_funcs.check_default_argument(tree, path)
+
+
+def custom_analyzer(file, path):
+    """Analyze file with custom functions and print errors."""
+    lines = file.readlines()
+    for i, line in enumerate(lines):
+        style_funcs.check_for_length(i, line, path)
+        style_funcs.check_for_indentation(i, line, path)
+        style_funcs.check_for_semicolon(i, line, path)
+        style_funcs.check_space_before_comment(i, line, path)
+        style_funcs.check_todo(i, line, path)
+        style_funcs.check_lines_between_functions(i, line, lines, path)
+        style_funcs.check_declaration_spaces(i, line, path)
 
 
 def analyze_file(path):
      """Analyze file and print errors."""
-     ast_analyzer(path)
-
-        # for i, line in enumerate(lines):
-            # style_funcs.check_for_length(i, line, path)
-            # style_funcs.check_for_indentation(i, line, path)
-            # style_funcs.check_for_semicolon(i, line, path)
-            # style_funcs.check_space_before_comment(i, line, path)
-            # style_funcs.check_todo(i, line, path)
-            # style_funcs.check_lines_between_functions(i, line, lines, path)
-            # style_funcs.check_declaration_spaces(i, line, path)
+     with open(path, encoding="utf8") as file:
+        # custom_analyzer(file, path)
+        ast_analyzer(file, path)
 
 
 
@@ -35,8 +40,9 @@ def analyze_directory(path):
             if file.endswith(".py") and file != "tests.py":
                 try:
                     analyze_file(os.path.join(root, file))
-                except SyntaxError:
+                except Exception:
                     continue
+
 
 def main(path):
     """Check if path is file or directory."""
