@@ -40,13 +40,14 @@ class VariableChecker(ast.NodeVisitor):
     def __init__(self, path):
         self.path = path
 
-    def visit_Assign(self, node):
-        for target in node.targets:
-            if isinstance(target, ast.Name):
-                if target.id != target.id.lower():
-                    code = list(style_issues.keys())[10]
-                    msg = style_issues[code].format(target.id)
-                    print(f"{self.path}: Line {target.lineno}: S{code} {msg}")
+    def visit_FunctionDef(self, node):
+        for arg in node.body:
+            if isinstance(arg, ast.Assign):
+                for target in arg.targets:
+                    if target.id != target.id.lower():
+                        code = list(style_issues.keys())[10]
+                        msg = style_issues[code].format(target.id)
+                        print(f"{self.path}: Line {target.lineno}: S{code} {msg}")
         self.generic_visit(node)
 
 
