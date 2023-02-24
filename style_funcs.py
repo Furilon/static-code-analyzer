@@ -66,6 +66,34 @@ class DefaultArgumentChecker(ast.NodeVisitor):
         self.generic_visit(node)
 
 
+class ClassNameChecker(ast.NodeVisitor):
+    """Check if class name is written in CamelCase."""
+
+    def __init__(self, path):
+        self.path = path
+
+    def visit_ClassDef(self, node):
+        if node.name != node.name.capitalize():
+            code = list(style_issues.keys())[8]
+            msg = style_issues[code].format(node.name)
+            print(f"{self.path}: Line {node.lineno}: S{code} {msg}")
+        self.generic_visit(node)
+
+
+class FunctionNameChecker(ast.NodeVisitor):
+    """Check if function name is written in snake_case."""
+
+    def __init__(self, path):
+        self.path = path
+
+    def visit_FunctionDef(self, node):
+        if node.name != node.name.lower():
+            code = list(style_issues.keys())[9]
+            msg = style_issues[code].format(node.name)
+            print(f"{self.path}: Line {node.lineno}: S{code} {msg}")
+        self.generic_visit(node)
+
+
 def check_for_length(index, string, path):
     """Check if line is longer than 79 characters."""
     if len(string.strip()) > 79:
@@ -122,30 +150,14 @@ def check_declaration_spaces(index, string, path):
         print(f"{path}: Line {index + 1}: S{code} {msg}")
 
 
-def check_class_name(index, string, path):
+def check_class_name(doc, path):
     """Check if class name is written in CamelCase."""
-
-    declaration = utils.is_declaration(string)
-    is_camel_case = string != string.lower() and string != string.upper() and "_" not in string
-
-    if declaration == "class" and not is_camel_case:
-        name = re.match(r"(class\s+)(\w+)", string).group(2)
-        code = list(style_issues.keys())[7]
-        msg = style_issues[code].format(name)
-        print(f"{path}: Line {index + 1}: S{code} {msg}")
+    ClassNameChecker(path).visit(ast.parse(doc))
 
 
-def check_function_name(index, string, path):
+def check_function_name(doc, path):
     """Check if function name is written in snake_case."""
-    declaration = utils.is_declaration(string)
-    is_snake_case = string == string.lower()
-
-
-    if declaration == "function" and not is_snake_case:
-        name = re.match(r"(\s*def\s+)(\w+)", string).group(2)
-        code = list(style_issues.keys())[8]
-        msg = style_issues[code].format(name)
-        print(f"{path}: Line {index + 1}: S{code} {msg}")
+    FunctionNameChecker(path).visit(ast.parse(doc))
 
 
 def check_argument_name(doc, path):
