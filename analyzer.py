@@ -4,12 +4,15 @@ import style_funcs, os, ast
 def ast_analyzer(file, path):
     """Analyze file with ast and print errors."""
     lines = file.read()
-    tree = ast.parse(lines)
-    style_funcs.check_class_name(tree, path)
-    style_funcs.check_function_name(tree, path)
-    style_funcs.check_argument_name(tree, path)
-    style_funcs.check_variable_name(tree, path)
-    style_funcs.check_default_argument(tree, path)
+    try:
+        tree = ast.parse(lines)
+        style_funcs.check_class_name(tree, path)
+        style_funcs.check_function_name(tree, path)
+        style_funcs.check_argument_name(tree, path)
+        style_funcs.check_variable_name(tree, path)
+        style_funcs.check_default_argument(tree, path)
+    except:
+        pass
 
 
 def custom_analyzer(file, path):
@@ -24,11 +27,13 @@ def custom_analyzer(file, path):
         style_funcs.check_lines_between_functions(i, line, lines, path)
         style_funcs.check_declaration_spaces(i, line, path)
 
+    file.seek(0)
+
 
 def analyze_file(path):
      """Analyze file and print errors."""
      with open(path, encoding="utf8") as file:
-        # custom_analyzer(file, path)
+        custom_analyzer(file, path)
         ast_analyzer(file, path)
 
 
@@ -38,10 +43,7 @@ def analyze_directory(path):
     for root, _, files in os.walk(path):
         for file in files:
             if file.endswith(".py") and file != "tests.py":
-                try:
-                    analyze_file(os.path.join(root, file))
-                except Exception:
-                    continue
+                analyze_file(os.path.join(root, file))
 
 
 def main(path):

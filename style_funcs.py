@@ -88,14 +88,14 @@ class FunctionNameChecker(ast.NodeVisitor):
 def check_for_length(index, string, path):
     """Check if line is longer than 79 characters."""
     if len(string.strip()) > 79:
-        utils.print_error(style_issues, index, 0, path)
+        utils.print_error(style_issues, index+1, 0, path)
 
 
 def check_for_indentation(index, string, path):
     """Check if indentation is not a multiple of 4."""
 
-    if string.startswith((" ")) and (len(string) - len(string.lstrip(" "))) % 4 != 0:
-        utils.print_error(style_issues, index, 1, path)
+    if string.startswith(" ") and (len(string) - len(string.lstrip(" "))) % 4 != 0:
+        utils.print_error(style_issues, index+1, 1, path)
 
 
 def check_for_semicolon(index, string, path):
@@ -103,7 +103,7 @@ def check_for_semicolon(index, string, path):
 
     code = string.split("#")[0]
     if code.strip().endswith(';'):
-        utils.print_error(style_issues, index, 2, path)
+        utils.print_error(style_issues, index+1, 2, path)
 
 
 def check_space_before_comment(index, string, path):
@@ -112,7 +112,7 @@ def check_space_before_comment(index, string, path):
     if string.__contains__("#") and not string.strip().startswith("#"):
         text = string.split("#")[0]
         if len(text) - len(text.rstrip(" ")) != 2:
-            utils.print_error(style_issues, index, 3, path)
+            utils.print_error(style_issues, index+1, 3, path)
 
 
 def check_todo(index, string, path):
@@ -121,13 +121,13 @@ def check_todo(index, string, path):
     if string.__contains__("#"):
         comment = string.split("#", 1)[-1].strip().lower()
         if "todo" in comment:
-            utils.print_error(style_issues, index, 4, path)
+            utils.print_error(style_issues, index+1, 4, path)
 
 
 def check_lines_between_functions(index, line, lines, path):
     """Check if there are more than two blank lines preceding a code line."""
     if line and lines[index].strip() == '' and lines[index-1].strip() == '' and lines[index-2].strip() == '':
-        utils.print_error(style_issues, index+1, 5, path)
+        utils.print_error(style_issues, index+2, 5, path)
 
 
 def check_declaration_spaces(index, string, path):
@@ -136,7 +136,7 @@ def check_declaration_spaces(index, string, path):
     declaration = utils.is_declaration(string)
     pattern = r"(class\s{2,}\w+)|(def\s{2,}\w+)"
     if declaration and re.match(pattern, string.strip()):
-        utils.print_error(style_issues, index, 6, path, declaration)
+        utils.print_error(style_issues, index+1, 6, path, declaration)
 
 
 def check_class_name(doc, path):
