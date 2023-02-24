@@ -1,5 +1,6 @@
 import style_funcs, os
 
+
 def analyze_file(path):
      """Analyze file and print errors."""
      with open(path, encoding="utf-8") as file:
@@ -10,10 +11,7 @@ def analyze_file(path):
             style_funcs.check_for_semicolon(i, line, path)
             style_funcs.check_space_before_comment(i, line, path)
             style_funcs.check_todo(i, line, path)
-
-            if line and lines[i].strip() == '' and lines[i-1].strip() == '' and lines[i-2].strip() == '':
-                style_funcs.check_lines_between_functions(i+1, path)
-            
+            style_funcs.check_lines_between_functions(i, path)
             style_funcs.check_declaration_spaces(i, line, path)
             style_funcs.check_class_name(i, line, path)
             style_funcs.check_function_name(i, line, path)

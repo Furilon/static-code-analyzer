@@ -1,5 +1,7 @@
 import utils
 import re
+import ast
+
 
 # Stylistic issues
 style_issues = {
@@ -57,9 +59,10 @@ def check_todo(index, string, path):
             print_error(index, 4, path)
 
 
-def check_lines_between_functions(index, path):
+def check_lines_between_functions(index, line, lines, path):
     """Check if there are more than two blank lines preceding a code line."""
-    print_error(index, 5, path)
+    if line and lines[index].strip() == '' and lines[index-1].strip() == '' and lines[index-2].strip() == '':
+        print_error(index+1, 5, path)
 
 
 def check_declaration_spaces(index, string, path):
@@ -97,6 +100,21 @@ def check_function_name(index, string, path):
         code = list(style_issues.keys())[8]
         msg = style_issues[code].format(name)
         print(f"{path}: Line {index + 1}: S{code} {msg}")
+
+
+def check_argument_name(index, string, path):
+    """Check if argument name is written in snake_case."""
+    pass
+
+
+def check_variable_name(index, string, path):
+    """Check if variable name is written in snake_case."""
+    pass
+
+
+def check_default_argument(index, string, path):
+    """Check if the default argument value is mutable."""
+    pass
 
 
 def print_error(index, msg_index, path):
