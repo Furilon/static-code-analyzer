@@ -28,7 +28,7 @@ class ArgumentChecker(ast.NodeVisitor):
     def visit_FunctionDef(self, node):
         for arg in node.args.args:
             if arg.arg != arg.arg.lower():
-                print_error(arg.lineno, 10, self.path, arg.arg)
+                utils.print_error(style_issues, arg.lineno, 9, self.path, arg.arg)
         self.generic_visit(node)
 
 
@@ -42,8 +42,8 @@ class VariableChecker(ast.NodeVisitor):
         for arg in node.body:
             if isinstance(arg, ast.Assign):
                 for target in arg.targets:
-                    if target.id != target.id.lower():
-                        print_error(target.lineno, 11, self.path, target.id)
+                    if hasattr(target, "id") and target.id != target.id.lower():
+                        utils.print_error(style_issues, target.lineno, 10, self.path, target.id)
         self.generic_visit(node)
 
 
@@ -57,7 +57,7 @@ class DefaultArgumentChecker(ast.NodeVisitor):
         if node.args.defaults:
             for default in node.args.defaults:
                 if isinstance(default, ast.List) or isinstance(default, ast.Dict) or isinstance(default, ast.Set):
-                    print_error(node.lineno, 11, self.path)
+                    utils.print_error(style_issues, node.lineno, 11, self.path)
         self.generic_visit(node)
 
 
@@ -68,8 +68,8 @@ class ClassNameChecker(ast.NodeVisitor):
         self.path = path
 
     def visit_ClassDef(self, node):
-        if node.name != node.name.capitalize():
-            print_error(node.lineno, 8, self.path, node.name)
+        if not utils.is_camel_case(node.name):
+            utils.print_error(style_issues, node.lineno, 7, self.path, node.name)
         self.generic_visit(node)
 
 
@@ -81,21 +81,21 @@ class FunctionNameChecker(ast.NodeVisitor):
 
     def visit_FunctionDef(self, node):
         if node.name != node.name.lower():
-            print_error(node.lineno, 9, self.path, node.name)
+            utils.print_error(style_issues, node.lineno, 8, self.path, node.name)
         self.generic_visit(node)
 
 
 def check_for_length(index, string, path):
     """Check if line is longer than 79 characters."""
     if len(string.strip()) > 79:
-        print_error(index, 0, path)
+        utils.print_error(style_issues, index, 0, path)
 
 
 def check_for_indentation(index, string, path):
     """Check if indentation is not a multiple of 4."""
 
     if string.startswith((" ")) and (len(string) - len(string.lstrip(" "))) % 4 != 0:
-        print_error(index, 1, path)
+        utils.print_error(style_issues, index, 1, path)
 
 
 def check_for_semicolon(index, string, path):
@@ -103,7 +103,7 @@ def check_for_semicolon(index, string, path):
 
     code = string.split("#")[0]
     if code.strip().endswith(';'):
-        print_error(index, 2, path)
+        utils.print_error(style_issues, index, 2, path)
 
 
 def check_space_before_comment(index, string, path):
@@ -112,7 +112,7 @@ def check_space_before_comment(index, string, path):
     if string.__contains__("#") and not string.strip().startswith("#"):
         text = string.split("#")[0]
         if len(text) - len(text.rstrip(" ")) != 2:
-            print_error(index, 3, path)
+            utils.print_error(style_issues, index, 3, path)
 
 
 def check_todo(index, string, path):
@@ -121,13 +121,13 @@ def check_todo(index, string, path):
     if string.__contains__("#"):
         comment = string.split("#", 1)[-1].strip().lower()
         if "todo" in comment:
-            print_error(index, 4, path)
+            utils.print_error(style_issues, index, 4, path)
 
 
 def check_lines_between_functions(index, line, lines, path):
     """Check if there are more than two blank lines preceding a code line."""
     if line and lines[index].strip() == '' and lines[index-1].strip() == '' and lines[index-2].strip() == '':
-        print_error(index+1, 5, path)
+        utils.print_error(style_issues, index+1, 5, path)
 
 
 def check_declaration_spaces(index, string, path):
@@ -136,9 +136,7 @@ def check_declaration_spaces(index, string, path):
     declaration = utils.is_declaration(string)
     pattern = r"(class\s{2,}\w+)|(def\s{2,}\w+)"
     if declaration and re.match(pattern, string.strip()):
-        code = list(style_issues.keys())[6]
-        msg = style_issues[code].format(declaration)
-        print(f"{path}: Line {index + 1}: S{code} {msg}")
+        utils.print_error(style_issues, index, 6, path, declaration)
 
 
 def check_class_name(doc, path):
@@ -165,10 +163,3 @@ def check_default_argument(doc, path):
     """Check if the default argument value is mutable."""
     DefaultArgumentChecker(path).visit(ast.parse(doc))
 
-
-def print_error(index, msg_index, path, name=None):
-        code = list(style_issues.keys())[msg_index]
-        msg = style_issues[code]
-        if name:
-            msg = style_issues[code].format(name)
-        print(f"{path}: Line {index + 1}: S{code} {msg}")
