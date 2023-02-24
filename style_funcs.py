@@ -14,10 +14,55 @@ style_issues = {
     '007': "Too many spaces after '{0}'",
     "008": "Class name '{0}' should be written in CamelCase",
     "009": "Function name '{0}' should be written in snake_case",
-    "010": "Argument name '{0} should be written in snake_case",
+    "010": "Argument name '{0}+' should be written in snake_case",
     "011": "Variable name '{0}' should be written in snake_case",
     "012": "The default argument value is mutable",
 }
+
+class ArgumentChecker(ast.NodeVisitor):
+    """Check if argument name is written in snake_case."""
+
+    def __init__(self, path):
+        self.path = path
+
+    def visit_FunctionDef(self, node):
+        for arg in node.args.args:
+            if arg.arg != arg.arg.lower():
+                code = list(style_issues.keys())[9]
+                msg = style_issues[code].format(arg.arg)
+                print(f"{self.path}: Line {arg.lineno}: S{code} {msg}")
+        self.generic_visit(node)
+
+
+class VariableChecker(ast.NodeVisitor):
+    """Check if variable name is written in snake_case."""
+
+    def __init__(self, path):
+        self.path = path
+
+    def visit_Assign(self, node):
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                if target.id != target.id.lower():
+                    code = list(style_issues.keys())[10]
+                    msg = style_issues[code].format(target.id)
+                    print(f"{self.path}: Line {target.lineno}: S{code} {msg}")
+        self.generic_visit(node)
+
+
+class DefaultArgumentChecker(ast.NodeVisitor):
+    """Check if default argument value is mutable."""
+
+    def __init__(self, path):
+        self.path = path
+
+    def visit_FunctionDef(self, node):
+        for arg in node.args.args:
+            if hasattr(arg, "default") and arg.default:
+                if isinstance(arg.default, (ast.List, ast.Dict, ast.Set)):
+                    code = list(style_issues.keys())[11]
+                    print(f"{self.path}: Line {arg.lineno}: S{code} {style_issues[code]}")
+        self.generic_visit(node)
 
 
 def check_for_length(index, string, path):
@@ -102,19 +147,19 @@ def check_function_name(index, string, path):
         print(f"{path}: Line {index + 1}: S{code} {msg}")
 
 
-def check_argument_name(index, string, path):
+def check_argument_name(doc, path):
     """Check if argument name is written in snake_case."""
-    pass
+    ArgumentChecker(path).visit(ast.parse(doc))
 
 
-def check_variable_name(index, string, path):
+def check_variable_name(doc, path):
     """Check if variable name is written in snake_case."""
-    pass
+    VariableChecker(path).visit(ast.parse(doc))
 
 
-def check_default_argument(index, string, path):
+def check_default_argument(doc, path):
     """Check if the default argument value is mutable."""
-    pass
+    DefaultArgumentChecker(path).visit(ast.parse(doc))
 
 
 def print_error(index, msg_index, path):
