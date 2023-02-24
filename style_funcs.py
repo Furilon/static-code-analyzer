@@ -58,11 +58,11 @@ class DefaultArgumentChecker(ast.NodeVisitor):
         self.path = path
 
     def visit_FunctionDef(self, node):
-        for arg in node.args.args:
-            if hasattr(arg, "default") and arg.default:
-                if isinstance(arg.default, (ast.List, ast.Dict, ast.Set)):
+        if node.args.defaults:
+            for default in node.args.defaults:
+                if isinstance(default, ast.List) or isinstance(default, ast.Dict) or isinstance(default, ast.Set):
                     code = list(style_issues.keys())[11]
-                    print(f"{self.path}: Line {arg.lineno}: S{code} {style_issues[code]}")
+                    print(f"{self.path}: Line {default.lineno}: S{code} {style_issues[code]}")
         self.generic_visit(node)
 
 
